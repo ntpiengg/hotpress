@@ -108,19 +108,19 @@
     <input type="number" id="panelWidth" placeholder="e.g., 40">
 
     <div id="gaugePressureInput">
-        <label for="gaugePressure">Gauge Pressure ($kgf/cm^2$):</label>
+        <label for="gaugePressure">Gauge Pressure (kgf/cm^2):</label>
         <input type="number" id="gaugePressure" placeholder="e.g., 2.5">
     </div>
 
     <div id="partPressureInput" style="display: none;">
-        <label for="partPressure">Part Pressure ($kgf/cm^2$):</label>
+        <label for="partPressure">Part Pressure (kgf/cm^2):</label>
         <input type="number" id="partPressure" placeholder="e.g., 10">
     </div>
 
     <label for="constant">Select Constant:</label>
     <select id="constant">
-        <option value="normal">Normal (1256.63 $cm^2$)</option>
-        <option value="monster">Monster (2042.03 $cm^2$)</option>
+        <option value="normal">Normal (1256.63 cm^2)</option>
+        <option value="monster">Monster (2042.03 cm^2)</option>
     </select>
 
     <button onclick="calculatePressure()">Calculate</button>
@@ -157,7 +157,7 @@
             panelWidth = panelWidth * conversionFactor;
         }
 
-        const panelArea = panelLength * panelWidth * 2;
+        const panelArea = panelLength * panelWidth;
 
         let result;
         if (calculationType === 'part') {
