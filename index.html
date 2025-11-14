@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pressure Calculator</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label, select, input, button {
+            display: block;
+            width: 100%;
+            margin-top: 1em;
+        }
+        input, select {
+            padding: 0.5em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 0.75em;
+            font-size: 1em;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 1.5em;
+            padding: 1em;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .radio-group {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1em;
+        }
+        .radio-group label {
+            width: auto;
+            margin-right: 1em;
+        }
+        .unit-selection {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1em;
+        }
+        .unit-selection label {
+            margin-right: 1em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pressure Calculator</h1>
+
+    <div class="radio-group">
+        <label for="calculate-part">
+            <input type="radio" id="calculate-part" name="calculation-type" value="part" checked>
+            Calculate Part Pressure
+        </label>
+        <label for="calculate-gauge">
+            <input type="radio" id="calculate-gauge" name="calculation-type" value="gauge">
+            Calculate Gauge Pressure
+        </label>
+    </div>
+
+    <div class="unit-selection">
+        <label>Panel Dimensions Unit:</label>
+        <label for="unit-cm">
+            <input type="radio" id="unit-cm" name="panel-unit" value="cm" checked> cm
+        </label>
+        <label for="unit-in">
+            <input type="radio" id="unit-in" name="panel-unit" value="in"> inches
+        </label>
+    </div>
+
+    <label id="panelLengthLabel" for="panelLength">Panel Length (cm):</label>
+    <input type="number" id="panelLength" placeholder="e.g., 50">
+
+    <label id="panelWidthLabel" for="panelWidth">Panel Width (cm):</label>
+    <input type="number" id="panelWidth" placeholder="e.g., 40">
+
+    <div id="gaugePressureInput">
+        <label for="gaugePressure">Gauge Pressure ($kgf/cm^2$):</label>
+        <input type="number" id="gaugePressure" placeholder="e.g., 2.5">
+    </div>
+
+    <div id="partPressureInput" style="display: none;">
+        <label for="partPressure">Part Pressure ($kgf/cm^2$):</label>
+        <input type="number" id="partPressure" placeholder="e.g., 10">
+    </div>
+
+    <label for="constant">Select Constant:</label>
+    <select id="constant">
+        <option value="normal">Normal (1256.63 $cm^2$)</option>
+        <option value="monster">Monster (2042.03 $cm^2$)</option>
+    </select>
+
+    <button onclick="calculatePressure()">Calculate</button>
+
+    <div class="output">
+        <p>Result: <span id="result"></span></p>
+    </div>
+</div>
+
+<script>
+    const constants = {
+        normal: 1256.63,
+        monster: 2042.03
+    };
+
+    const conversionFactor = 2.54; // 1 inch = 2.54 cm
+
+    function calculatePressure() {
+        const calculationType = document.querySelector('input[name="calculation-type"]:checked').value;
+        const panelUnit = document.querySelector('input[name="panel-unit"]:checked').value;
+        let panelLength = parseFloat(document.getElementById('panelLength').value);
+        let panelWidth = parseFloat(document.getElementById('panelWidth').value);
+        const selectedConstant = document.getElementById('constant').value;
+        const constantValue = constants[selectedConstant];
+
+        if (isNaN(panelLength) || isNaN(panelWidth) || panelLength <= 0 || panelWidth <= 0) {
+            document.getElementById('result').textContent = 'Please enter valid panel dimensions.';
+            return;
+        }
+
+        // Convert inches to centimeters if inches is selected
+        if (panelUnit === 'in') {
+            panelLength = panelLength * conversionFactor;
+            panelWidth = panelWidth * conversionFactor;
+        }
+
+        const panelArea = panelLength * panelWidth * 2;
+
+        let result;
+        if (calculationType === 'part') {
+            const gaugePressure = parseFloat(document.getElementById('gaugePressure').value);
+            if (isNaN(gaugePressure) || gaugePressure <= 0) {
+                document.getElementById('result').textContent = 'Please enter a valid gauge pressure.';
+                return;
+            }
+            // Part Pressure = (Gauge Pressure * Constant) / (Panel Length * Panel Width * 2)
+            result = (gaugePressure * constantValue) / panelArea;
+            document.getElementById('result').textContent = `${result.toFixed(2)} kgf/cm² (Part Pressure)`;
+        } else { // 'gauge'
+            const partPressure = parseFloat(document.getElementById('partPressure').value);
+            if (isNaN(partPressure) || partPressure <= 0) {
+                document.getElementById('result').textContent = 'Please enter a valid part pressure.';
+                return;
+            }
+            // Gauge Pressure = (Part Pressure * Panel Length * Panel Width * 2) / Constant
+            result = (partPressure * panelArea) / constantValue;
+            document.getElementById('result').textContent = `${result.toFixed(2)} kgf/cm² (Gauge Pressure)`;
+        }
+    }
+
+    // Toggle input fields based on radio button selection
+    document.querySelectorAll('input[name="calculation-type"]').forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            if (event.target.value === 'part') {
+                document.getElementById('gaugePressureInput').style.display = 'block';
+                document.getElementById('partPressureInput').style.display = 'none';
+            } else {
+                document.getElementById('gaugePressureInput').style.display = 'none';
+                document.getElementById('partPressureInput').style.display = 'block';
+            }
+        });
+    });
+
+    // Update labels based on unit selection
+    document.querySelectorAll('input[name="panel-unit"]').forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            const unit = event.target.value;
+            document.getElementById('panelLengthLabel').textContent = `Panel Length (${unit}):`;
+            document.getElementById('panelWidthLabel').textContent = `Panel Width (${unit}):`;
+        });
+    });
+</script>
+
+</body>
+</html>
+
